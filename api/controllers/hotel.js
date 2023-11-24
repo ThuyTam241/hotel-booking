@@ -1,8 +1,15 @@
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
 
+const MIN_PRICE = 1;
+const MAX_PRICE = 999;
+
 export const createHotel = async (req, res, next) => {
   const newHotel = new Hotel(req.body);
+
+  if (MIN_PRICE > newHotel.cheapestPrice || MAX_PRICE < newHotel.cheapestPrice) {
+    next({message: `The price should be between ${MIN_PRICE} and ${MAX_PRICE} `})
+  }
 
   try {
     const savedHotel = await newHotel.save();
@@ -11,6 +18,7 @@ export const createHotel = async (req, res, next) => {
     next(err);
   }
 };
+
 export const updateHotel = async (req, res, next) => {
   try {
     const updatedHotel = await Hotel.findByIdAndUpdate(
@@ -23,6 +31,7 @@ export const updateHotel = async (req, res, next) => {
     next(err);
   }
 };
+
 export const deleteHotel = async (req, res, next) => {
   try {
     await Hotel.findByIdAndDelete(req.params.id);
@@ -31,6 +40,7 @@ export const deleteHotel = async (req, res, next) => {
     next(err);
   }
 };
+
 export const getHotel = async (req, res, next) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
@@ -39,18 +49,20 @@ export const getHotel = async (req, res, next) => {
     next(err);
   }
 };
+
 export const getHotels = async (req, res, next) => {
   const { min, max, ...others } = req.query;
   try {
     const hotels = await Hotel.find({
       ...others,
-      cheapestPrice: { $gt: min | 1, $lt: max || 999 },
+      cheapestPrice: { $gt: min | MIN_PRICE, $lt: max || MAX_PRICE },
     }).limit(req.query.limit);
     res.status(200).json(hotels);
   } catch (err) {
     next(err);
   }
 };
+
 export const countByCity = async (req, res, next) => {
   const cities = req.query.cities.split(",");
   try {
@@ -64,6 +76,7 @@ export const countByCity = async (req, res, next) => {
     next(err);
   }
 };
+
 export const countByType = async (req, res, next) => {
   try {
     const hotelCount = await Hotel.countDocuments({ type: "hotel" });
