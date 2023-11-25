@@ -65,6 +65,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="new/:id"
+                element={
+                  <ProtectedRoute>
+                    <New inputs={userInputs} title="Edit New User" />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
             <Route path="hotels">
               <Route
@@ -85,6 +93,14 @@ function App() {
               />
               <Route
                 path="new"
+                element={
+                  <ProtectedRoute>
+                    <NewHotel  />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="new/:productId"
                 element={
                   <ProtectedRoute>
                     <NewHotel  />

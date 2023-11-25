@@ -2,17 +2,29 @@ import "./newHotel.scss";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { hotelInputs } from "../../formSource";
 import useFetch from "../../hooks/useFetch";
+import { useLocation } from "react-router-dom";
+import ImageList from "@mui/material/ImageList";
+import ImageListItem from "@mui/material/ImageListItem";
 import axios from "axios";
 
 const NewHotel = () => {
+  const location = useLocation();
+  const path = location.pathname.split("new/").slice(-1);
   const [files, setFiles] = useState("");
   const [info, setInfo] = useState({});
   const [rooms, setRooms] = useState([]);
+  const { data: hotel } = useFetch(`/hotels/find/${path[0]}`);
 
   const { data, loading } = useFetch("/rooms");
+
+  useEffect(() => {
+    if (hotel) {
+      setInfo(hotel);
+    }
+  }, [hotel]);
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -25,8 +37,6 @@ const NewHotel = () => {
     );
     setRooms(value);
   };
-  
-  console.log(files)
 
   const handleClick = async (e) => {
     e.preventDefault();
@@ -35,9 +45,10 @@ const NewHotel = () => {
         Object.values(files).map(async (file) => {
           const data = new FormData();
           data.append("file", file);
-          data.append("upload_preset", "upload");
+          data.append("folder", "hotel-booking");
+          data.append("upload_preset", "hotel-booking");
           const uploadRes = await axios.post(
-            "https://api.cloudinary.com/v1_1/lamadev/image/upload",
+            "https://api.cloudinary.com/v1_1/dactech/image/upload",
             data
           );
 
@@ -52,8 +63,14 @@ const NewHotel = () => {
         photos: list,
       };
 
-      await axios.post("/hotels", newhotel);
-    } catch (err) {console.log(err)}
+      if (newhotel._id) {
+        await axios.put(`/hotels/${newhotel._id}`, newhotel);
+      } else {
+        await axios.post("/hotels", newhotel);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
   return (
     <div className="new">
@@ -64,17 +81,26 @@ const NewHotel = () => {
           <h1>Add New Product</h1>
         </div>
         <div className="bottom">
-          <div className="left">
-            <img
-              src={
-                files
-                  ? URL.createObjectURL(files[0])
-                  : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
-              }
-              alt=""
-            />
-          </div>
           <div className="right">
+          {(hotel.photos && hotel.photos.length) ? (
+                <ImageList
+                  sx={{ height: 450 }}
+                  cols={3}
+                  rowHeight={164}
+                >
+                  {hotel.photos?.map((photo) => (
+                    <ImageListItem key={photo}>
+                      <img
+                        srcSet={`${photo}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                        src={`${photo}?w=164&h=164&fit=crop&auto=format`}
+                        loading="lazy"
+                      />
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              ) : (
+                <div>No images</div>
+              )}
             <form>
               <div className="formInput">
                 <label htmlFor="file">
@@ -94,6 +120,7 @@ const NewHotel = () => {
                   <label>{input.label}</label>
                   <input
                     id={input.id}
+                    value={info[input.id]}
                     onChange={handleChange}
                     type={input.type}
                     placeholder={input.placeholder}

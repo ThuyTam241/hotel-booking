@@ -6,7 +6,6 @@ const Navbar = () => {
   const { user } = useContext(AuthContext);
 
   const handleLogout = () => {
-    // Clear local storage cache
     localStorage.removeItem("user");
     window.location.reload();
   };
