@@ -1,8 +1,8 @@
 import "./newRoom.scss";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { roomInputs } from "../../formSource";
 import useFetch from "../../hooks/useFetch";
 import axios from "axios";
@@ -11,8 +11,20 @@ const NewRoom = () => {
   const [info, setInfo] = useState({});
   const [hotelId, setHotelId] = useState(undefined);
   const [rooms, setRooms] = useState([]);
+  const location = useLocation();
+  const path = location.pathname.split("new/").slice(-1);
+  const { data: fetchedRoom } = useFetch(`/rooms/${path[0]}`);
 
-  const { data, loading, error } = useFetch("/hotels");
+  const { data, loading } = useFetch("/hotels");
+
+  useEffect(() => {
+    if (fetchedRoom) {
+        setInfo(fetchedRoom);
+        if (fetchedRoom.roomNumbers?.length) {
+          setRooms([...fetchedRoom.roomNumbers.map((r) => r.number)])
+        }
+    }
+  }, [fetchedRoom])
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -20,15 +32,18 @@ const NewRoom = () => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const roomNumbers = rooms.split(",").map((room) => ({ number: room }));
+    const roomNumbers = rooms.map((room) => ({ number: room }));
     try {
-      await axios.post(`/rooms/${hotelId}`, { ...info, roomNumbers });
+      if (info._id) {
+        await axios.put(`/rooms/${info._id}`, { ...info, roomNumbers });
+      } else {
+        await axios.post(`/rooms/${hotelId}`, { ...info, roomNumbers });
+      }
     } catch (err) {
       console.log(err);
     }
   };
 
-  console.log(info)
   return (
     <div className="new">
       <Sidebar />
@@ -46,6 +61,7 @@ const NewRoom = () => {
                   <input
                     id={input.id}
                     type={input.type}
+                    value={info[input.id]}
                     placeholder={input.placeholder}
                     onChange={handleChange}
                   />
@@ -54,7 +70,8 @@ const NewRoom = () => {
               <div className="formInput">
                 <label>Rooms</label>
                 <textarea
-                  onChange={(e) => setRooms(e.target.value)}
+                  onChange={(e) => setRooms(e.target.value.split(','))}
+                  value={rooms.length ? rooms.join(',') : ''}
                   placeholder="give comma between room numbers."
                 />
               </div>

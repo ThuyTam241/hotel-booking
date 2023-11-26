@@ -133,6 +133,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="new/:productId"
+                element={
+                  <ProtectedRoute>
+                    <NewRoom  />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Route>
         </Routes>
