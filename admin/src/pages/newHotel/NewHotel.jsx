@@ -15,27 +15,46 @@ const NewHotel = () => {
   const path = location.pathname.split("new/").slice(-1);
   const [files, setFiles] = useState("");
   const [info, setInfo] = useState({});
-  const [rooms, setRooms] = useState([]);
+  const [roomOptions, setRoomOptions] = useState([]);
   const { data: hotel } = useFetch(`/hotels/find/${path[0]}`);
 
-  const { data, loading } = useFetch("/rooms");
+  const { data: fetchedRooms, loading } = useFetch("/rooms");
 
   useEffect(() => {
     if (hotel) {
       setInfo(hotel);
     }
-  }, [hotel]);
+    if (hotel && hotel.rooms) {
+      const roomOptions = fetchedRooms.map((room) => {
+        room.isSelected = !!hotel.rooms.find((_id) => _id == room._id);
+        return room;
+      })
+      setRoomOptions(roomOptions);
+    } else {
+      setRoomOptions(fetchedRooms)
+    }
+  }, [hotel, fetchedRooms]);
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
+  const handleFilesChange = (e) => {
+    setFiles(e.target.files)
+    const urls = Array.from(e.target.files).map((file) => URL.createObjectURL(file))
+    setInfo({...hotel, photos: urls});
+  }
+
   const handleSelect = (e) => {
-    const value = Array.from(
+    const selectedOptions = Array.from(
       e.target.selectedOptions,
       (option) => option.value
-    );
-    setRooms(value);
+    )
+    const updatedRoomOptions = roomOptions.map((room) => {
+      room.isSelected = !!selectedOptions.find((_id) => _id == room._id);
+      return room;
+    })
+    setRoomOptions(updatedRoomOptions);
   };
 
   const handleClick = async (e) => {
@@ -59,8 +78,8 @@ const NewHotel = () => {
 
       const newhotel = {
         ...info,
-        rooms,
-        photos: list,
+        rooms: roomOptions.filter(r => r.isSelected),
+        photos: list.length ? list : hotel.photos,
       };
 
       if (newhotel._id) {
@@ -82,18 +101,17 @@ const NewHotel = () => {
         </div>
         <div className="bottom">
           <div className="right">
-          {(hotel.photos && hotel.photos.length) ? (
+          {(info.photos && info.photos.length) ? (
                 <ImageList
                   sx={{ height: 450 }}
                   cols={3}
                   rowHeight={164}
                 >
-                  {hotel.photos?.map((photo) => (
+                  {info.photos?.map((photo) => (
                     <ImageListItem key={photo}>
                       <img
-                        srcSet={`${photo}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                        src={`${photo}?w=164&h=164&fit=crop&auto=format`}
-                        loading="lazy"
+                        srcSet={`${photo}`}
+                        src={`${photo}`}
                       />
                     </ImageListItem>
                   ))}
@@ -110,7 +128,7 @@ const NewHotel = () => {
                   type="file"
                   id="file"
                   multiple
-                  onChange={(e) => setFiles(e.target.files)}
+                  onChange={handleFilesChange}
                   style={{ display: "none" }}
                 />
               </div>
@@ -139,9 +157,9 @@ const NewHotel = () => {
                 <select id="rooms" multiple onChange={handleSelect}>
                   {loading
                     ? "loading"
-                    : data &&
-                      data.map((room) => (
-                        <option key={room._id} value={room._id}>
+                    : roomOptions &&
+                      roomOptions.map((room) => (
+                        <option key={room._id} value={room._id} selected={room.isSelected}>
                           {room.title}
                         </option>
                       ))}
