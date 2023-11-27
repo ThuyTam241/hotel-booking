@@ -19,12 +19,12 @@ const NewRoom = () => {
 
   useEffect(() => {
     if (fetchedRoom) {
-        setInfo(fetchedRoom);
-        if (fetchedRoom.roomNumbers?.length) {
-          setRooms([...fetchedRoom.roomNumbers.map((r) => r.number)])
-        }
+      setInfo(fetchedRoom);
+      if (fetchedRoom.roomNumbers?.length) {
+        setRooms([...fetchedRoom.roomNumbers.map((r) => r.number)]);
+      }
     }
-  }, [fetchedRoom])
+  }, [fetchedRoom]);
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -70,8 +70,8 @@ const NewRoom = () => {
               <div className="formInput">
                 <label>Rooms</label>
                 <textarea
-                  onChange={(e) => setRooms(e.target.value.split(','))}
-                  value={rooms.length ? rooms.join(',') : ''}
+                  onChange={(e) => setRooms(e.target.value.split(","))}
+                  value={rooms.length ? rooms.join(",") : ""}
                   placeholder="give comma between room numbers."
                 />
               </div>
@@ -85,7 +85,9 @@ const NewRoom = () => {
                     ? "loading"
                     : data &&
                       data.map((hotel) => (
-                        <option key={hotel._id} value={hotel._id}>{hotel.name}</option>
+                        <option key={hotel._id} value={hotel._id}>
+                          {hotel.name}
+                        </option>
                       ))}
                 </select>
               </div>

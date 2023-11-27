@@ -3,12 +3,12 @@ import axios from "axios";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useFetch from "../../hooks/useFetch";
-import * as React from 'react';
-import MuiAlert from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
+import * as React from "react";
+import MuiAlert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -22,7 +22,7 @@ const New = ({ inputs, title }) => {
   const { data: user } = useFetch(`/users/${path[0]}`);
 
   const [open, setOpen] = useState(false);
-  const [snackBarType, setSnackBarType] = useState('success');
+  const [snackBarType, setSnackBarType] = useState("success");
 
   const handleSnackClick = (type) => {
     setOpen(true);
@@ -30,7 +30,7 @@ const New = ({ inputs, title }) => {
   };
 
   const handleSnackClose = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
 
@@ -39,10 +39,9 @@ const New = ({ inputs, title }) => {
 
   useEffect(() => {
     if (user) {
-      setInfo(user)
+      setInfo(user);
     }
-  }, [user])
-
+  }, [user]);
 
   const handleChange = (e) => {
     setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -52,20 +51,20 @@ const New = ({ inputs, title }) => {
     e.preventDefault();
     const data = new FormData();
     data.append("file", file);
-    data.append("folder", "hotel-booking")
+    data.append("folder", "hotel-booking");
     data.append("upload_preset", "hotel-booking");
     try {
       let newUser = {
-        ...info
+        ...info,
       };
       if (file) {
         const uploadRes = await axios.post(
           "https://api.cloudinary.com/v1_1/dactech/image/upload",
           data
         );
-  
+
         const { url } = uploadRes.data;
-        newUser.img = url
+        newUser.img = url;
       }
 
       if (newUser._id) {
@@ -73,20 +72,24 @@ const New = ({ inputs, title }) => {
       } else {
         await axios.post("/auth/register", newUser);
       }
-      handleSnackClick('success')
+      handleSnackClick("success");
     } catch (err) {
-      handleSnackClick('error');
+      handleSnackClick("error");
       console.log(err);
     }
   };
 
   return (
     <div className="new">
-        <Snackbar open={open} autoHideDuration={6000} onClose={handleSnackClose}>
-          <Alert onClose={handleSnackClose} severity={snackBarType} sx={{ width: '100%' }}>
-            {snackBarType} call!
-          </Alert>
-        </Snackbar>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleSnackClose}>
+        <Alert
+          onClose={handleSnackClose}
+          severity={snackBarType}
+          sx={{ width: "100%" }}
+        >
+          {snackBarType} call!
+        </Alert>
+      </Snackbar>
       <Sidebar />
       <div className="newContainer">
         <Navbar />
@@ -99,7 +102,9 @@ const New = ({ inputs, title }) => {
               src={
                 file
                   ? URL.createObjectURL(file)
-                  : ( info.img ? info.img : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg")
+                  : info.img
+                  ? info.img
+                  : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
               }
               alt=""
             />
@@ -122,7 +127,10 @@ const New = ({ inputs, title }) => {
                 <div className="formInput" key={input.id}>
                   <label>{input.label}</label>
                   <input
-                    disabled={input.id == 'password' || input.id == 'username'}
+                    disabled={
+                      !!info._id &&
+                      (input.id == "password" || input.id == "username")
+                    }
                     value={info[input.id]}
                     onChange={handleChange}
                     type={input.type}
