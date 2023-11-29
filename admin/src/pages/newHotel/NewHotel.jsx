@@ -9,6 +9,13 @@ import { useLocation } from "react-router-dom";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import axios from "axios";
+import * as React from "react";
+import MuiAlert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const NewHotel = () => {
   const location = useLocation();
@@ -19,6 +26,22 @@ const NewHotel = () => {
   const { data: hotel } = useFetch(`/hotels/find/${path[0]}`);
 
   const { data: fetchedRooms, loading } = useFetch("/rooms");
+
+  const [open, setOpen] = useState(false);
+  const [snackBarType, setSnackBarType] = useState("success");
+
+  const handleSnackClick = (type) => {
+    setOpen(true);
+    setSnackBarType(type);
+  };
+
+  const handleSnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (hotel) {
@@ -83,16 +106,26 @@ const NewHotel = () => {
       };
 
       if (newhotel._id) {
-        await axios.put(`/hotels/${newhotel._id}`, newhotel);
+        await axios.put(`/hotels/${newhotel._id}`, newhotel).then(() => handleSnackClick("success"));
       } else {
-        await axios.post("/hotels", newhotel);
+        await axios.post("/hotels", newhotel).then(() => handleSnackClick("success"));
       }
     } catch (err) {
+      handleSnackClick("error");
       console.log(err);
     }
   };
   return (
     <div className="new">
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleSnackClose}>
+        <Alert
+          onClose={handleSnackClose}
+          severity={snackBarType}
+          sx={{ width: "100%" }}
+        >
+          {snackBarType} call!
+        </Alert>
+      </Snackbar>
       <Sidebar />
       <div className="newContainer">
         <Navbar />

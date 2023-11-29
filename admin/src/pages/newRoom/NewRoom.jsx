@@ -6,6 +6,13 @@ import { useLocation } from "react-router-dom";
 import { roomInputs } from "../../formSource";
 import useFetch from "../../hooks/useFetch";
 import axios from "axios";
+import * as React from "react";
+import MuiAlert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const NewRoom = () => {
   const [info, setInfo] = useState({});
@@ -16,6 +23,22 @@ const NewRoom = () => {
   const { data: fetchedRoom } = useFetch(`/rooms/${path[0]}`);
 
   const { data, loading } = useFetch("/hotels");
+
+  const [open, setOpen] = useState(false);
+  const [snackBarType, setSnackBarType] = useState("success");
+
+  const handleSnackClick = (type) => {
+    setOpen(true);
+    setSnackBarType(type);
+  };
+
+  const handleSnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (fetchedRoom) {
@@ -35,17 +58,27 @@ const NewRoom = () => {
     const roomNumbers = rooms.map((room) => ({ number: room }));
     try {
       if (info._id) {
-        await axios.put(`/rooms/${info._id}`, { ...info, roomNumbers });
+        await axios.put(`/rooms/${info._id}`, { ...info, roomNumbers }).then(() => handleSnackClick("success"));
       } else {
-        await axios.post(`/rooms/${hotelId}`, { ...info, roomNumbers });
+        await axios.post(`/rooms/${hotelId}`, { ...info, roomNumbers }).then(() => handleSnackClick("success"));
       }
     } catch (err) {
+      handleSnackClick("error");
       console.log(err);
     }
   };
 
   return (
     <div className="new">
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleSnackClose}>
+        <Alert
+          onClose={handleSnackClose}
+          severity={snackBarType}
+          sx={{ width: "100%" }}
+        >
+          {snackBarType} call!
+        </Alert>
+      </Snackbar>
       <Sidebar />
       <div className="newContainer">
         <Navbar />
@@ -78,9 +111,11 @@ const NewRoom = () => {
               <div className="formInput">
                 <label>Choose a hotel</label>
                 <select
+                  style={{width: '100%'}}
                   id="hotelId"
                   onChange={(e) => setHotelId(e.target.value)}
                 >
+                  <option value="">No hotel was selected</option>
                   {loading
                     ? "loading"
                     : data &&
