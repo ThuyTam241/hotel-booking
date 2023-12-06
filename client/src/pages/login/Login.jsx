@@ -105,10 +105,10 @@ const Login = () => {
             />
           </>
         )}
-        <button disabled={loading} onClick={handleClick} className="lButton">
-          Login
+        <button id="login-form-submit" disabled={loading} onClick={handleClick} className="lButton">
+          {isRegisterMode ? 'Register' : 'Login'}
         </button>
-        {error && <span>{error.message}</span>}
+        {error && <span id="error-message">{error.message}</span>}
       </div>
     </div>
   );

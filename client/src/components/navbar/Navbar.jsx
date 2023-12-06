@@ -17,12 +17,14 @@ const Navbar = () => {
           <span className="logo">Home</span>
         </Link>
         {user ? (
-          <div>
-            {user.username}
-            <button className="navButton" onClick={() => handleLogout()}>
+          <>
+            <p id="logged-in-user">
+              {user.username}
+            </p>
+            <button id="logout" className="navButton" onClick={() => handleLogout()}>
               Logout
             </button>
-          </div>
+          </>
         ) : (
           <div className="navItems">
             <Link
@@ -33,6 +35,7 @@ const Navbar = () => {
             </Link>
             <Link
               to="/login"
+              id="login-link-btn"
               style={{ color: "inherit", textDecoration: "none" }}
             >
               <button className="navButton">Login</button>
