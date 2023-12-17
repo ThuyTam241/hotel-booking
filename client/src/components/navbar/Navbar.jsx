@@ -29,6 +29,7 @@ const Navbar = () => {
           <div className="navItems">
             <Link
               to="/register"
+              id="registered-link-btn"
               style={{ color: "inherit", textDecoration: "none" }}
             >
               <button className="navButton">Register</button>

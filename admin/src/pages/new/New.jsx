@@ -139,7 +139,7 @@ const New = ({ inputs, title }) => {
                   />
                 </div>
               ))}
-              <button onClick={handleClick}>Send</button>
+              <button onClick={handleClick} id = "send" >Send</button>
             </form>
           </div>
         </div>
